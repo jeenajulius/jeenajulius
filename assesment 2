@@ -1,0 +1,85 @@
+###### Assessment
+
+###### I am going to provide two .csv files , you are supposed to work on them and have to provide solutions to the following problems
+
+###### import necessary libraries
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+###### merge those two csv files (after getting as dataframes, get them as a single dataframe)
+
+df1=pd.read_csv('college_1.csv')
+df2=pd.read_csv('college_2.csv')
+
+data=pd.concat([df1,df2],axis=0)
+
+###### Take each csv file , split that csv file into multiple categories (example csv files are added in the repo) 
+
+
+###### consider if the codekata score exceeds 15000 points(present week) then make a csv on those observations as Exceeded expectations.csv
+
+
+###### if  10000<codekata score<15000   (Reached_expectations.csv)
+
+
+
+###### if  7000<codekata score<10000   (Needs_Improvement.csv)
+
+
+###### if  codekate score < 7000        (Unsatisfactory.csv)
+
+data.columns=['Name', 'python', 'mysql', 'Previous_Geekions', 'CodeKata_Score',
+       'Department', 'Rising', 'python_en', 'computational_thinking']
+
+data.index=[i for i in range(data.shape[0])]
+
+data[data.CodeKata_Score>=15000].to_csv('Exceeded_expectations.csv')
+data[(data.CodeKata_Score<15000) & (data.CodeKata_Score>=10000)].to_csv('Reached_expectations.csv')
+data[(data.CodeKata_Score<10000) & (data.CodeKata_Score>=7000)].to_csv('Needs_Improvement.csv')
+data[data.CodeKata_Score<7000].to_csv('Unsatisfactory.csv')
+
+###### Average of previous week geekions vs this week geekions (i.e Previous Geekions vs CodeKata Score)
+
+f'average of Previous Geekions:{data.Previous_Geekions.mean()}, average of CodeKata Score:{data.CodeKata_Score.mean()}'
+
+###### No of students participated 
+
+f'no_of_students : {data.shape[0]}'
+
+###### #Average completion of python course or my_sql or python english or computational thinking
+
+print(f'Average completion of python : {data.python.mean()}')
+print(f'Average completion of my_sql : {data.mysql.mean()}')
+print(f'Average completion of python english : {data.python_en.mean()}')
+print(f'Average completion of computational thinking : {data.computational_thinking.mean()}')
+
+###### rising star of the week (top 3 candidate who performed well in that particular week)
+
+data.sort_values('Rising',ascending=False).iloc[0:3,:]
+
+###### Shining stars of the week (top 3 candidates who has highest geekions)
+
+data.sort_values('Previous_Geekions',ascending=False).iloc[0:3,:]
+
+###### Department wise codekata performence (pie chart)
+
+x=data.groupby('Department').CodeKata_Score.mean()
+plt.pie(x,labels=x.index,autopct='%.2f%%');
+
+###### Department wise toppers (horizantal bar graph or any visual representations of your choice)
+
+data.Department.unique()
+
+cse=data[data.Department=='Computer Science and Engineering'].sort_values('CodeKata_Score',ascending=False).iloc[0:10,:]
+sns.barplot(x=cse.CodeKata_Score,y=cse.Name)
+plt.title('Toppers of cse');
+
+ece=data[data.Department=='Electronics and Communication Engineering'].sort_values('CodeKata_Score',ascending=False).iloc[0:10,:]
+sns.barplot(x=ece.CodeKata_Score,y=ece.Name)
+plt.title('Toppers of ece');
+
+eee=data[data.Department=='Electronics and Electrical Engineering'].sort_values('CodeKata_Score',ascending=False).iloc[0:10,:]
+sns.barplot(x=eee.CodeKata_Score,y=eee.Name)
+plt.title('Toppers of eee');
