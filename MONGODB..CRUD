@@ -1,0 +1,34 @@
+from pymongo import MongoClient
+import json
+JEENAML=MongoClient("mongodb://Mikhael57:DATA1234@ac-quli5ru-shard-00-00.xdxrzud.mongodb.net:27017,ac-quli5ru-shard-00-01.xdxrzud.mongodb.net:27017,ac-quli5ru-shard-00-02.xdxrzud.mongodb.net:27017/?ssl=true&replicaSet=atlas-jxsncw-shard-0&authSource=admin&retryWrites=true&w=majority")
+dbC=JEENAML["CRUD"]
+CollectionCRUD=dbC["DATA"]
+record={'name':"Name",'age': "Age","Phone_no":"Phoneno",'place':"place"}
+CollectionCRUD.insert_one(record)
+
+for i in CollectionCRUD.find():
+    print(i)
+{'_id': ObjectId('6367c9550e4647629b4f6bad'), 'name': 'Name', 'age': 'Age', 'Phone_no': 'Phoneno', 'place': 'place'}
+record1={"$set":{'name':"jeena","age":"21","Phone_no":"123143141","place":'Kerala'}}
+CollectionCRUD.update_one(record,record1)
+
+for i in CollectionCRUD.find():
+    print(i)
+{'_id': ObjectId('6367c9550e4647629b4f6bad'), 'name': 'jeena', 'age': '21', 'Phone_no': '123143141', 'place': 'Kerala'}
+record2={'age':'24'}
+
+for i in CollectionCRUD.find():
+    print(i)
+{'_id': ObjectId('6367c9550e4647629b4f6bad'), 'name': 'jeena', 'age': '24', 'Phone_no': '123143141', 'place': 'Kerala'}
+CollectionCRUD.insert_one(record2)
+
+for i in CollectionCRUD.find():
+    print(i)
+{'_id': ObjectId('6367c9550e4647629b4f6bad'), 'name': 'jeena', 'age': '24', 'Phone_no': '123143141', 'place': 'Kerala'}
+{'_id': ObjectId('6367c9a00e4647629b4f6bae'), 'age': '24'}
+CollectionCRUD.delete_one(record2)
+
+for i in CollectionCRUD.find():
+    print(i)
+{'_id': ObjectId('6367c9550e4647629b4f6bad'), 'name': 'jeena', 'age': '24', 'Phone_no': '123143141', 'place': 'Kerala'}
+ 
