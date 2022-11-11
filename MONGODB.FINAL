@@ -1,0 +1,387 @@
+
+from pymongo import MongoClient
+import json
+import pandas as pd
+JEENAML=MongoClient("mongodb://Mikhael57:DATA1234@ac-quli5ru-shard-00-00.xdxrzud.mongodb.net:27017,ac-quli5ru-shard-00-01.xdxrzud.mongodb.net:27017,ac-quli5ru-shard-00-02.xdxrzud.mongodb.net:27017/?ssl=true&replicaSet=atlas-jxsncw-shard-0&authSource=admin&retryWrites=true&w=majority")
+db=JEENAML["Students"]
+Collection1=db["Data"]
+
+for i in open('students.json'):
+    data_i=json.loads(i)
+    Collection1.insert_one(data_i)
+---------------------------------------------------------------------------
+DuplicateKeyError                         Traceback (most recent call last)
+Input In [120], in ()
+      1 for i in open('students.json'):
+      2     data_i=json.loads(i)
+----> 3     Collection1.insert_one(data_i)
+
+File ~/opt/anaconda3/lib/python3.9/site-packages/pymongo/collection.py:621, in Collection.insert_one(self, document, bypass_document_validation, session, comment)
+    617     document["_id"] = ObjectId()
+    619 write_concern = self._write_concern_for(session)
+    620 return InsertOneResult(
+--> 621     self._insert_one(
+    622         document,
+    623         ordered=True,
+    624         write_concern=write_concern,
+    625         op_id=None,
+    626         bypass_doc_val=bypass_document_validation,
+    627         session=session,
+    628         comment=comment,
+    629     ),
+    630     write_concern.acknowledged,
+    631 )
+
+File ~/opt/anaconda3/lib/python3.9/site-packages/pymongo/collection.py:562, in Collection._insert_one(self, doc, ordered, write_concern, op_id, bypass_doc_val, session, comment)
+    550     result = sock_info.command(
+    551         self.__database.name,
+    552         command,
+   (...)
+    557         retryable_write=retryable_write,
+    558     )
+    560     _check_write_command_response(result)
+--> 562 self.__database.client._retryable_write(acknowledged, _insert_command, session)
+    564 if not isinstance(doc, RawBSONDocument):
+    565     return doc.get("_id")
+
+File ~/opt/anaconda3/lib/python3.9/site-packages/pymongo/mongo_client.py:1476, in MongoClient._retryable_write(self, retryable, func, session)
+   1474 """Internal retryable write helper."""
+   1475 with self._tmp_session(session) as s:
+-> 1476     return self._retry_with_session(retryable, func, s, None)
+
+File ~/opt/anaconda3/lib/python3.9/site-packages/pymongo/mongo_client.py:1349, in MongoClient._retry_with_session(self, retryable, func, session, bulk)
+   1339 """Execute an operation with at most one consecutive retries
+   1340 
+   1341 Returns func()'s return value on success. On error retries the same
+   (...)
+   1344 Re-raises any exception thrown by func().
+   1345 """
+   1346 retryable = (
+   1347     retryable and self.options.retry_writes and session and not session.in_transaction
+   1348 )
+-> 1349 return self._retry_internal(retryable, func, session, bulk)
+
+File ~/opt/anaconda3/lib/python3.9/site-packages/pymongo/_csot.py:105, in apply..csot_wrapper(self, *args, **kwargs)
+    103         with _TimeoutContext(timeout):
+    104             return func(self, *args, **kwargs)
+--> 105 return func(self, *args, **kwargs)
+
+File ~/opt/anaconda3/lib/python3.9/site-packages/pymongo/mongo_client.py:1390, in MongoClient._retry_internal(self, retryable, func, session, bulk)
+   1388                 raise last_error
+   1389             retryable = False
+-> 1390         return func(session, sock_info, retryable)
+   1391 except ServerSelectionTimeoutError:
+   1392     if is_retrying():
+   1393         # The application may think the write was never attempted
+   1394         # if we raise ServerSelectionTimeoutError on the retry
+   1395         # attempt. Raise the original exception instead.
+
+File ~/opt/anaconda3/lib/python3.9/site-packages/pymongo/collection.py:560, in Collection._insert_one.._insert_command(session, sock_info, retryable_write)
+    548     command["bypassDocumentValidation"] = True
+    550 result = sock_info.command(
+    551     self.__database.name,
+    552     command,
+   (...)
+    557     retryable_write=retryable_write,
+    558 )
+--> 560 _check_write_command_response(result)
+
+File ~/opt/anaconda3/lib/python3.9/site-packages/pymongo/helpers.py:217, in _check_write_command_response(result)
+    215 write_errors = result.get("writeErrors")
+    216 if write_errors:
+--> 217     _raise_last_write_error(write_errors)
+    219 wce = _get_wce_doc(result)
+    220 if wce:
+
+File ~/opt/anaconda3/lib/python3.9/site-packages/pymongo/helpers.py:189, in _raise_last_write_error(write_errors)
+    187 error = write_errors[-1]
+    188 if error.get("code") == 11000:
+--> 189     raise DuplicateKeyError(error.get("errmsg"), 11000, error)
+    190 raise WriteError(error.get("errmsg"), error.get("code"), error)
+
+DuplicateKeyError: E11000 duplicate key error collection: Students.Data index: _id_ dup key: { _id: 0 }, full error: {'index': 0, 'code': 11000, 'keyPattern': {'_id': 1}, 'keyValue': {'_id': 0}, 'errmsg': 'E11000 duplicate key error collection: Students.Data index: _id_ dup key: { _id: 0 }'}
+
+L=[]
+
+for i in Collection1.find():
+    L.append(i["scores"])
+
+Z=[]
+
+for i in Collection1.find():
+    Z.append(i)
+df1=pd.DataFrame(Z)
+df=pd.DataFrame(L)
+df1
+
+_id   	name	                    scores
+0	0	aimee Zank	[{'score': 1.463179736705023, 'type': 'exam'},...
+1	1	Aurelia Menendez	[{'score': 60.06045071030959, 'type': 'exam'},...
+2	2	Corliss Zuk	[{'score': 67.03077096065002, 'type': 'exam'},...
+3	3	Bao Ziglar	[{'score': 71.64343899778332, 'type': 'exam'},...
+4	4	Zachary Langlais	[{'score': 78.68385091304332, 'type': 'exam'},...
+...	...	...	...
+195	195	Linnie Weigel	[{'score': 52.44578368517977, 'type': 'exam'},...
+196	196	Santiago Dollins	[{'score': 52.04052571137036, 'type': 'exam'},...
+197	197	Tonisha Games	[{'score': 38.51269589995049, 'type': 'exam'},...
+198	198	Timothy Harrod	[{'score': 11.9075674046519, 'type': 'exam'}, ...
+199	199	Rae Kohout	[{'score': 82.11742562118049, 'type': 'exam'},...
+200 rows × 3 columns
+
+D=[]
+for i in L:
+    D.append(i)
+df2=pd.DataFrame(D)
+df3=df1.drop(['scores'],axis=1)
+df3
+_id	name
+0	0	aimee Zank
+1	1	Aurelia Menendez
+2	2	Corliss Zuk
+3	3	Bao Ziglar
+4	4	Zachary Langlais
+...	...	...
+195	195	Linnie Weigel
+196	196	Santiago Dollins
+197	197	Tonisha Games
+198	198	Timothy Harrod
+199	199	Rae Kohout
+200 rows × 2 columns
+
+df2
+                     0                                           	1                                         	2
+0	{'score': 1.463179736705023, 'type': 'exam'}	{'score': 11.78273309957772, 'type': 'quiz'}	{'score': 35.8740349954354, 'type': 'homework'}
+1	{'score': 60.06045071030959, 'type': 'exam'}	{'score': 52.79790691903873, 'type': 'quiz'}	{'score': 71.76133439165544, 'type': 'homework'}
+2	{'score': 67.03077096065002, 'type': 'exam'}	{'score': 6.301851677835235, 'type': 'quiz'}	{'score': 66.28344683278382, 'type': 'homework'}
+3	{'score': 71.64343899778332, 'type': 'exam'}	{'score': 24.80221293650313, 'type': 'quiz'}	{'score': 42.26147058804812, 'type': 'homework'}
+4	{'score': 78.68385091304332, 'type': 'exam'}	{'score': 90.2963101368042, 'type': 'quiz'}	{'score': 34.41620148042529, 'type': 'homework'}
+...	...	...	...
+195	{'score': 52.44578368517977, 'type': 'exam'}	{'score': 90.7775054046383, 'type': 'quiz'}	{'score': 11.75008382913026, 'type': 'homework'}
+196	{'score': 52.04052571137036, 'type': 'exam'}	{'score': 33.63300076481705, 'type': 'quiz'}	{'score': 78.79257377604428, 'type': 'homework'}
+197	{'score': 38.51269589995049, 'type': 'exam'}	{'score': 31.16287577231703, 'type': 'quiz'}	{'score': 79.15856355963004, 'type': 'homework'}
+198	{'score': 11.9075674046519, 'type': 'exam'}	{'score': 20.51879961777022, 'type': 'quiz'}	{'score': 64.85650354990375, 'type': 'homework'}
+199	{'score': 82.11742562118049, 'type': 'exam'}	{'score': 49.61295450928224, 'type': 'quiz'}	{'score': 28.86823689842918, 'type': 'homework'}
+200 rows × 3 columns
+
+df4=pd.concat([df3,df2], axis=1)
+df4[0][12]
+{'score': 54.29841278520669, 'type': 'exam'}
+
+g=[]
+for i in L:
+    for j in i:
+        g.append(j)
+g
+m=[]
+for l in range(0,len(g)):
+    for i in g:
+        x = i.get("score")
+        y = i.get('type')
+        if l/3!=0:
+            m.append(x)
+            m.append(y)
+g
+r=[]
+for i in g:
+    r.append(list(i.items()))
+h=[]
+for i in r:
+    for j in i:
+        h.append(j)
+
+#FINDING THE PERSON WITH MAX SCORES ACROSS ALL SUBJECTS:
+V=[]
+C=0
+for i in range(0,len(df4)):
+    C=df4[0][i]["score"]+df4[1][i]["score"]+df4[2][i]["score"]
+    V.append(C)
+print(V.index(max(V)))
+df4['name'][13]
+
+13
+'Jessika Dagenais'
+
+#Students who scored below average in the exam and pass mark is 40%
+H=[]
+S=0
+for i in range(0,len(df4)):
+    S=df4[0][i]["score"]
+    H.append(S)
+F=[]
+for i in range(0,len(H)):
+    if H[i]<40:
+        F.append((H.index(H[i])))
+
+#Students who scored below average in the exam and pass mark is 40%
+n=[]
+X=[]
+
+for i in range(0,len(df4)):
+    n.append(df4["name"][i])
+for i in F:
+    X.append(n[i])
+    print(n[i],"       ",H[i])
+aimee Zank         1.463179736705023
+Jenette Flanders         37.32285459166097
+Daphne Zheng         22.13583712862635
+Alix Sherrill         25.15924151998215
+Dodie Staller         7.772386442858281
+Fletcher Mcconnell         39.41011069729274
+Jonie Raby         19.17861192576963
+Edgar Sarkis         8.606983261043888
+Laureen Salomone         3.677565278992456
+Kaila Deibler         15.89771199662455
+Tandra Meadows         24.90138146001744
+Carli Belvins         7.112266875518214
+Synthia Labelle         27.22049103148209
+Richelle Siemers         34.64373397163318
+Mariette Batdorf         0.04381116979284005
+Aleida Elsass         28.02518041693717
+Ernestine Macfarland         15.29147856258362
+Lady Lefevers         16.89237820123443
+Barbera Lippman         35.43490750932609
+Alica Pasley         19.38544736721771
+Malisa Jeanes         33.44580005842922
+Danika Loeffler         21.54531707142236
+Joaquina Arbuckle         28.66671659815553
+Dusti Lemmond         17.27725327681863
+Rubie Winton         7.176062073558509
+Kim Xu         19.96531774799065
+Cody Strouth         4.784730508547719
+Harriett Velarde         33.7733570443736
+Leola Lundin         31.62936464207764
+Len Treiber         21.21850173315791
+Echo Pippins         27.77924608896123
+Santiago Dollins         33.48242310776701
+Tonisha Games         29.13833807032966
+Brain Lachapelle         2.013473187690951
+Toshiko Sabella         21.05570509531929
+Ty Barbieri         38.43781607953586
+Ta Sikorski         30.02140506101446
+Lucinda Vanderburg         27.55843343656866
+Darby Wass         6.867644836612586
+Omar Bowdoin         8.58858127638702
+Tania Hulett         21.84617015735916
+Karry Petrarca         3.677125771067413
+aimee Zank         15.91636686717778
+Aurelia Menendez         5.105728872755167
+Bao Ziglar         37.22753032391262
+Jenette Flanders         22.0445143239363
+Salena Olmos         0.8007809823509016
+Sanda Ryba         10.62413290291121
+Denisha Cast         2.723204808959712
+Fletcher Mcconnell         24.98670635479149
+Verdell Sowinski         20.1442549902647
+Gisela Levin         15.88727528055548
+Rosana Vales         15.73156258820246
+Tamika Schildgen         4.433956226109692
+Jesusa Rickenbacker         15.6237624645333
+Rudolph Domingo         33.02956040417582
+Jonie Raby         7.307863391324043
+Kaila Deibler         20.85988856264308
+Tandra Meadows         19.07796402740767
+Gwen Honig         35.99646382910844
+Sadie Jernigan         6.14281392478545
+Synthia Labelle         11.06312649271668
+Ernestine Macfarland         9.666623747888858
+Kurtis Jiles         38.84932631249875
+Barbera Lippman         10.1210778879972
+Dinah Sauve         9.660849614328693
+Elizabet Kleine         23.35599596646158
+Joel Rueter         21.78981361637835
+Joaquina Arbuckle         35.43562368815135
+Grady Zemke         10.37320113489379
+Rubie Winton         36.1767454709986
+Whitley Fears         20.84454374176408
+Kim Xu         29.1596029917098
+Merissa Mann         0.7300279717432967
+Cody Strouth         32.99854612126559
+Leonida Lafond         8.125073097960179
+Devorah Smartt         23.94616611315642
+Len Treiber         39.19832917406515
+Echo Pippins         18.09013691507853
+Tonisha Games         38.51269589995049
+Timothy Harrod         11.9075674046519
+
+df1
+
+ _id  	name	                 scores
+0	0	aimee Zank	[{'score': 1.463179736705023, 'type': 'exam'},...
+1	1	Aurelia Menendez	[{'score': 60.06045071030959, 'type': 'exam'},...
+2	2	Corliss Zuk	[{'score': 67.03077096065002, 'type': 'exam'},...
+3	3	Bao Ziglar	[{'score': 71.64343899778332, 'type': 'exam'},...
+4	4	Zachary Langlais	[{'score': 78.68385091304332, 'type': 'exam'},...
+...	...	...	...
+195	195	Linnie Weigel	[{'score': 52.44578368517977, 'type': 'exam'},...
+196	196	Santiago Dollins	[{'score': 52.04052571137036, 'type': 'exam'},...
+197	197	Tonisha Games	[{'score': 38.51269589995049, 'type': 'exam'},...
+198	198	Timothy Harrod	[{'score': 11.9075674046519, 'type': 'exam'}, ...
+199	199	Rae Kohout	[{'score': 82.11742562118049, 'type': 'exam'},...
+200 rows × 3 columns
+
+lis=[]
+for i in range(0,len(df1)):
+    lis.append("Pass")
+    
+df1["Status"]=lis
+
+#students who scored below pass mark and assigned them as fail, and above pass mark as pass in all the categories.
+for i in range(0,len(df1)):
+    for j in X:
+        if df1["name"][i] == j:
+            df1.at[i,'Status']='fail'
+
+df1
+
+ _id  	name	                  scores	                                  Status
+0	0	aimee Zan  [{'score': 1.463179736705023, 'type': 'exam'},...    	      fail
+1	1	Aurelia Menend	[{'score': 60.06045071030959, 'type': 'exam'},...     	fail
+2	2	Corliss Zuk	[{'score': 67.03077096065002, 'type': 'exam'},...	          Pass
+3	3	Bao Ziglar	[{'score': 71.64343899778332, 'type': 'exam'},...	          fail
+4	4	Zachary Langlais	[{'score': 78.68385091304332, 'type': 'exam'},...   	Pass
+...	...	...	...	...
+195	195	Linnie Weigel	[{'score': 52.44578368517977, 'type': 'exam'},...   	Pass
+196	196	Santiago Dollins	[{'score': 52.04052571137036, 'type': 'exam'},...	fail
+197	197	Tonisha Games	[{'score': 38.51269589995049, 'type': 'exam'},...	    fail
+198	198	Timothy Harrod	[{'score': 11.9075674046519, 'type': 'exam'}, ...	  fail
+199	199	Rae Kohout	[{'score': 82.11742562118049, 'type': 'exam'},...	      Pass
+200 rows × 4 columns
+
+H1=[]
+S1=0
+for i in range(0,len(df4)):
+    S1=df4[1][i]["score"]
+    H1.append(S1)
+
+
+H2=[]
+S2=0
+for i in range(0,len(df4)):
+    S2=df4[2][i]["score"]
+    H2.append(S2)
+
+#The total and average of the exam, quiz and homework and store them in a separate collection.
+
+print("Total and average of the exam",sum(H),sum(H)/len(H),'\n',"total and average of the quiz",sum(H1),sum(H1)/len(H1),'\n',"total and average of the Homework",sum(H2)/len(H2))
+Total_exam:sum(H)
+average_exam=sum(H)/len(H)
+total_quiz=sum(H1)
+average_quiz=sum(H1)/len(H1)
+total_Homework=sum(H2)
+average_quiz=sum(H2)/len(H2)
+
+LMT=["Totalexam",sum(H),"averageexam",sum(H)/len(H),"totalquiz",sum(H1),"averagequiz",sum(H1)/len(H1),"totalHomework",sum(H2),"averageHW",sum(H2)/len(H2)]
+def Convert(lst):
+    res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
+    return res_dct
+LMTS=Convert(LMT)
+
+Total and average of the exam 9734.734151900355 48.673670759501775 
+ total and average of the quiz 9799.34463886051 48.99672319430255 
+ total and average of the Homework 67.81869620661146
+
+#Find the total and average of the exam, quiz and homework and store them in a separate collection.
+
+SCORES=db["Data1"]
+SCORES.insert_one(LMTS)
+ 
